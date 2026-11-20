@@ -121,6 +121,14 @@ public abstract class CadObject : IHandledCadObject
 
 	private CadDictionary _xdictionary = null;
 
+	// Identity hash, assigned once at construction. CadObject keeps reference equality, so any
+	// value that is stable for the object's lifetime is a valid hash; this one is a plain field
+	// read, where the runtime's identity hash (RuntimeHelpers.GetHashCode) took ~20% of the read
+	// time of a large drawing through the HashSet behind every CadObjectCollection.
+	private int _identityHash = System.Threading.Interlocked.Increment(ref _identityHashSeed);
+
+	private static int _identityHashSeed;
+
 	/// <summary>
 	/// Default constructor.
 	/// </summary>
@@ -175,6 +183,7 @@ public abstract class CadObject : IHandledCadObject
 	public virtual CadObject Clone()
 	{
 		CadObject clone = (CadObject)this.MemberwiseClone();
+		clone._identityHash = System.Threading.Interlocked.Increment(ref _identityHashSeed);
 
 		clone.Handle = 0;
 
@@ -252,6 +261,12 @@ public abstract class CadObject : IHandledCadObject
 	public bool RemoveReactor(CadObject reactor)
 	{
 		return this._reactors?.Remove(reactor) ?? false;
+	}
+
+	/// <inheritdoc/>
+	public override int GetHashCode()
+	{
+		return this._identityHash;
 	}
 
 	/// <inheritdoc/>
