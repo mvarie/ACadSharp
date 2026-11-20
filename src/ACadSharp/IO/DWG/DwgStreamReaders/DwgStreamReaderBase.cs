@@ -10,7 +10,7 @@ using System.Text;
 
 namespace ACadSharp.IO.DWG.DwgStreamReaders;
 
-internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
+internal abstract partial class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 {
 	/// <inheritdoc/>
 	public int BitShift { get; set; }
@@ -357,7 +357,7 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 		if (this.BitShift == 0)
 		{
 			//No need to apply the shift
-			_lastByte = base.ReadByte();
+			_lastByte = this.readRawByte();
 
 			return _lastByte;
 		}
@@ -365,7 +365,7 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 		//Get the last bits from the last readed byte
 		byte lastValues = (byte)((uint)_lastByte << BitShift);
 
-		_lastByte = base.ReadByte();
+		_lastByte = this.readRawByte();
 
 		return (byte)(lastValues | (uint)(byte)((uint)_lastByte >> 8 - BitShift));
 	}
@@ -552,7 +552,8 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 	public double ReadBitDoubleWithDefault(double def)
 	{
 		//Get the bytes form the default value
-		byte[] arr = LittleEndianConverter.Instance.GetBytes(def);
+		Span<byte> arr = stackalloc byte[8];
+		System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(arr, BitConverter.DoubleToInt64Bits(def));
 
 		switch (this.Read2Bits())
 		{
@@ -589,7 +590,7 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 					this.AdvanceByte();
 					arr[3] |= (byte)((uint)this._lastByte >> shift);
 				}
-				return LittleEndianConverter.Instance.ToDouble(arr);
+				return BitConverter.Int64BitsToDouble(System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(arr));
 			//10 6 bytes of data are present. The result is the default double, with the first 2 data bytes patched in
 			//replacing bytes 5 and 6 of the default double, and the last 4 data bytes patched in replacing the first 4
 			//bytes of the default double(assuming little endian).
@@ -630,7 +631,7 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 					this.AdvanceByte();
 					arr[3] |= (byte)((uint)this._lastByte >> 8 - this.BitShift);
 				}
-				return LittleEndianConverter.Instance.ToDouble(arr);
+				return BitConverter.Int64BitsToDouble(System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(arr));
 			//11 A full RD follows.
 			case 3:
 				return this.ReadDouble();
@@ -1010,11 +1011,11 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 
 	private ulong readHandle(int length)
 	{
-		byte[] raw = new byte[length];
-		byte[] arr = new byte[8];
+		Span<byte> raw = stackalloc byte[length];
+		Span<byte> arr = stackalloc byte[8];
 
-		if (this.Stream.Read(raw, 0, length) < length)
-			throw new EndOfStreamException();
+		for (int r = 0; r < length; r++)
+			raw[r] = this.readRawByte();
 
 		if (this.BitShift == 0)
 		{
@@ -1042,7 +1043,7 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 		for (int index = length; index < 8; ++index)
 			arr[index] = 0;
 
-		return LittleEndianConverter.Instance.ToUInt64(arr);
+		return System.Buffers.Binary.BinaryPrimitives.ReadUInt64LittleEndian(arr);
 	}
 
 	#endregion Handle reference
@@ -1096,7 +1097,7 @@ internal abstract class DwgStreamReaderBase : StreamIO, IDwgStreamReader
 	/// <inheritdoc/>
 	public void AdvanceByte()
 	{
-		this._lastByte = base.ReadByte();
+		this._lastByte = this.readRawByte();
 	}
 
 	/// <inheritdoc/>
