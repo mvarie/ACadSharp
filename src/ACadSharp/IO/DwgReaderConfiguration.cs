@@ -24,4 +24,11 @@ public class DwgReaderConfiguration : CadReaderConfiguration
 	/// default: true
 	/// </value>
 	public bool ReadSummaryInfo { get; set; } = true;
+
+	/// <summary>
+	/// Number of threads used to decode the objects section. 1 (the default) is the serial reader;
+	/// above 1 the objects are decoded concurrently and replayed in the serial reader's order, so the
+	/// resulting document is the same. 0 means one thread per processor.
+	/// </summary>
+	public int ParallelObjectDecode { get; set; } = 1;
 }
