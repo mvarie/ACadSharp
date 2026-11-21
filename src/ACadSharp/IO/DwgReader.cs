@@ -102,6 +102,8 @@ public class DwgReader : CadReaderBase<DwgReaderConfiguration>
 	/// <inheritdoc/>
 	public override CadDocument Read()
 	{
+		this._document.TrackReferences = this.Configuration.TrackReferences;
+
 		//Read the file header
 		this._fileHeader = this.readFileHeader();
 

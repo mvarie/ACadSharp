@@ -191,6 +191,11 @@ public abstract class ObjectDictionaryCollection<T> : ICadCollection<T>, IObserv
 
 		var existing = this.TryAdd(entry);
 
+		if (this.Document != null && !this.Document.TrackReferences)
+		{
+			return existing;
+		}
+
 		this.RemoveReference(existing.Name, owner);
 		this._referenceHandler.AddReference(existing.Name, owner, assignValue);
 		assignValue(existing);

@@ -205,6 +205,11 @@ public abstract class Table<T> : CadObject, ITable, ICadCollection<T>, IObservab
 
 		var existing = this.TryAdd(entry);
 
+		if (this.Document != null && !this.Document.TrackReferences)
+		{
+			return existing;
+		}
+
 		this.RemoveReference(existing.Name, owner);
 		this._referenceHandler.AddReference(existing.Name, owner, assignValue);
 		assignValue(existing);

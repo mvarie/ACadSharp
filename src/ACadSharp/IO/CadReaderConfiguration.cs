@@ -32,6 +32,16 @@ public abstract class CadReaderConfiguration
 	public bool KeepUnknownNonGraphicalObjects { get; set; } = false;
 
 	/// <summary>
+	/// Value given to <see cref="CadDocument.TrackReferences"/> on the document being read.
+	/// Set to false for a read-only consumer (a viewer): it removes the per-reference
+	/// bookkeeping that dominates the read time of large drawings.
+	/// </summary>
+	/// <value>
+	/// default: true
+	/// </value>
+	public bool TrackReferences { get; set; } = true;
+
+	/// <summary>
 	/// If set to true the reader will skip the proxy graphics section.
 	/// </summary>
 	/// <value>

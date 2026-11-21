@@ -14,7 +14,7 @@ namespace ACadSharp.Entities;
 /// The standard class for a basic CAD entity or a graphical object.
 /// </summary>
 [DxfSubClass(DxfSubclassMarker.Entity)]
-public abstract class Entity : CadObject, IEntity
+public abstract partial class Entity : CadObject, IEntity
 {
 	/// <summary>
 	/// Book color for this entity.
@@ -25,7 +25,9 @@ public abstract class Entity : CadObject, IEntity
 		get { return this._bookColor; }
 		set
 		{
-			this._bookColor = this.updateCollectionEntry(value, c => this._bookColor = c, this.Document?.Colors);
+			this._bookColor = this.Document == null || !this.Document.TrackReferences
+				? resolveUntracked(value, this.Document?.Colors)
+				: this.updateCollectionEntry(value, c => this._bookColor = c, this.Document.Colors);
 		}
 	}
 
@@ -68,7 +70,9 @@ public abstract class Entity : CadObject, IEntity
 				throw new ArgumentNullException(nameof(value));
 			}
 
-			this._layer = this.updateTableEntry(value, l => this._layer = l, this.Document?.Layers);
+			this._layer = this.Document == null || !this.Document.TrackReferences
+				? resolveUntracked(value, this.Document?.Layers)
+				: this.updateTableEntry(value, l => this._layer = l, this.Document.Layers);
 		}
 	}
 
@@ -92,7 +96,9 @@ public abstract class Entity : CadObject, IEntity
 				throw new ArgumentNullException(nameof(value));
 			}
 
-			this._lineType = this.updateTableEntry(value, l => this._lineType = l, this.Document?.LineTypes);
+			this._lineType = this.Document == null || !this.Document.TrackReferences
+				? resolveUntracked(value, this.Document?.LineTypes)
+				: this.updateTableEntry(value, l => this._lineType = l, this.Document.LineTypes);
 		}
 	}
 
@@ -111,7 +117,9 @@ public abstract class Entity : CadObject, IEntity
 		get { return this._material; }
 		set
 		{
-			this._material = this.updateCollectionEntry(value, m => this._material = m, this.Document?.Materials);
+			this._material = this.Document == null || !this.Document.TrackReferences
+				? resolveUntracked(value, this.Document?.Materials)
+				: this.updateCollectionEntry(value, m => this._material = m, this.Document.Materials);
 		}
 	}
 
@@ -319,6 +327,12 @@ public abstract class Entity : CadObject, IEntity
 	internal override void AssignDocument(CadDocument doc)
 	{
 		base.AssignDocument(doc);
+
+		if (!doc.TrackReferences)
+		{
+			this.assignDocumentUntracked(doc);
+			return;
+		}
 
 		this._bookColor = this.updateCollectionEntry(this._bookColor, c => this._bookColor = c, doc.Colors);
 		this._material = this.updateCollectionEntry(this._material, m => this._material = m, doc.Materials);

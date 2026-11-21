@@ -89,6 +89,19 @@ public class CadDocument : IHandledCadObject
 	public CadHeader Header { get; internal set; }
 
 	/// <summary>
+	/// When false, objects that point at a table entry or a named object (an entity's
+	/// layer, linetype, material, ...) are not registered as references of that entry.
+	/// </summary>
+	/// <remarks>
+	/// Reference tracking is what keeps referencing objects consistent when a table entry is
+	/// renamed or removed. It costs a dictionary insert per reference, which dominates the
+	/// read time of large drawings, and it is useless to a consumer that only reads the
+	/// document. Set from <see cref="IO.CadReaderConfiguration.TrackReferences"/> by the readers;
+	/// a document read with it off must be treated as read-only for table edits.
+	/// </remarks>
+	public bool TrackReferences { get; set; } = true;
+
+	/// <summary>
 	/// The collection of all images in the drawing.
 	/// </summary>
 	/// <remarks>

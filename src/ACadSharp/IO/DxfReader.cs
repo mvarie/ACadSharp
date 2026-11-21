@@ -169,6 +169,8 @@ public class DxfReader : CadReaderBase<DxfReaderConfiguration>
 	/// <inheritdoc/>
 	public override CadDocument Read()
 	{
+		this._document.TrackReferences = this.Configuration.TrackReferences;
+
 		this._document.SummaryInfo = new CadSummaryInfo();
 
 		this._reader = this._reader ?? this.getReader();
