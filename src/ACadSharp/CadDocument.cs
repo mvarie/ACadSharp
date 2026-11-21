@@ -229,6 +229,13 @@ public class CadDocument : IHandledCadObject
 	//Contains all the objects in the document
 	private readonly Dictionary<ulong, IHandledCadObject> _cadObjects = new Dictionary<ulong, IHandledCadObject>();
 
+	internal void EnsureObjectCapacity(int count)
+	{
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+		this._cadObjects.EnsureCapacity(count);
+#endif
+	}
+
 	private CadDictionary _rootDictionary = null;
 
 	/// <summary>

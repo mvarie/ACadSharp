@@ -68,6 +68,20 @@ internal abstract class CadDocumentBuilder
 		this.DocumentToBuild = document;
 	}
 
+	/// <summary>
+	/// Presizes the handle maps for <paramref name="count"/> objects. A large drawing otherwise
+	/// grows each of them from empty through ~20 resizes, rehashing every entry each time.
+	/// </summary>
+	internal void EnsureCapacity(int count)
+	{
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+		this.templatesMap.EnsureCapacity(count);
+		this.cadObjects.EnsureCapacity(count);
+		this.cadObjectsTemplates.EnsureCapacity(count);
+		this.DocumentToBuild.EnsureObjectCapacity(count);
+#endif
+	}
+
 	public void AddTemplate(ICadObjectTemplate template)
 	{
 		this.NotifyProgress(ReadStage.Read, template);

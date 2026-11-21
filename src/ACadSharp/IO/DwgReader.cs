@@ -1221,6 +1221,8 @@ public class DwgReader : CadReaderBase<DwgReaderConfiguration>
 			handles,
 			this._document.Classes);
 
+		this._builder.EnsureCapacity(handles.Count);
+
 		int workers = this.Configuration.ParallelObjectDecode;
 		if (workers == 0)
 			workers = Environment.ProcessorCount;

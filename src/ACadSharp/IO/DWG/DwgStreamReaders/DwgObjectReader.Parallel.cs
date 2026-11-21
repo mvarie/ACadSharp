@@ -145,7 +145,11 @@ namespace ACadSharp.IO.DWG
 
 		private void replay(Dictionary<ulong, Decoded> decoded)
 		{
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+			var visited = new HashSet<ulong>(decoded.Count);
+#else
 			var visited = new HashSet<ulong>();
+#endif
 
 			while (this._handles.Count > 0)
 			{
