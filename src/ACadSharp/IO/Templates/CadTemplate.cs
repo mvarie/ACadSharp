@@ -4,6 +4,7 @@ using ACadSharp.Objects;
 using ACadSharp.Tables;
 using ACadSharp.XData;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ACadSharp.IO.Templates;
 
@@ -13,9 +14,25 @@ internal abstract class CadTemplate : ICadObjectTemplate
 
 	public DxfClass DxfClass { get; set; }
 
-	public Dictionary<ulong, List<ExtendedDataRecord>> EDataTemplate { get; set; } = new();
+	// Created on first use: a template exists per object read, and almost none carry XData or
+	// reactors, so eager collections were three empty allocations per object.
+	public Dictionary<ulong, List<ExtendedDataRecord>> EDataTemplate
+	{
+		get { return this._eData ??= new(); }
+		set { this._eData = value; }
+	}
 
-	public Dictionary<string, List<ExtendedDataRecord>> EDataTemplateByAppName { get; set; } = new();
+	public Dictionary<string, List<ExtendedDataRecord>> EDataTemplateByAppName
+	{
+		get { return this._eDataByAppName ??= new(); }
+		set { this._eDataByAppName = value; }
+	}
+
+	private Dictionary<ulong, List<ExtendedDataRecord>> _eData;
+
+	private Dictionary<string, List<ExtendedDataRecord>> _eDataByAppName;
+
+	private HashSet<ulong> _reactorsHandles;
 
 	public bool HasBeenBuilt { get; private set; } = false;
 
@@ -23,7 +40,11 @@ internal abstract class CadTemplate : ICadObjectTemplate
 
 	public ulong? OwnerHandle { get; set; }
 
-	public HashSet<ulong> ReactorsHandles { get; set; } = new();
+	public HashSet<ulong> ReactorsHandles
+	{
+		get { return this._reactorsHandles ??= new(); }
+		set { this._reactorsHandles = value; }
+	}
 
 	public ulong? XDictHandle { get; set; }
 
@@ -79,7 +100,7 @@ internal abstract class CadTemplate : ICadObjectTemplate
 			this.CadObject.XDictionary = cadDictionary;
 		}
 
-		foreach (ulong handle in this.ReactorsHandles)
+		foreach (ulong handle in this._reactorsHandles ?? Enumerable.Empty<ulong>())
 		{
 			if (builder.TryGetCadObject(handle, out CadObject reactor))
 			{
@@ -91,7 +112,7 @@ internal abstract class CadTemplate : ICadObjectTemplate
 			}
 		}
 
-		foreach (var item in this.EDataTemplate)
+		foreach (var item in this._eData ?? Enumerable.Empty<KeyValuePair<ulong, List<ExtendedDataRecord>>>())
 		{
 			if (builder.TryGetCadObject(item.Key, out AppId app))
 			{
@@ -103,7 +124,7 @@ internal abstract class CadTemplate : ICadObjectTemplate
 			}
 		}
 
-		foreach (var item in this.EDataTemplateByAppName)
+		foreach (var item in this._eDataByAppName ?? Enumerable.Empty<KeyValuePair<string, List<ExtendedDataRecord>>>())
 		{
 			if (builder.TryGetTableEntry(item.Key, out AppId app))
 			{

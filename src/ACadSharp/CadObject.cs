@@ -284,7 +284,9 @@ public abstract class CadObject : IHandledCadObject
 			doc.RegisterCollection(this.XDictionary);
 		}
 
-		if (this.ExtendedData.Any())
+		// The ExtendedData getter creates the dictionary: test the field, so objects without
+		// XData (nearly all of them) do not each allocate one here.
+		if (this._extendedData != null && this._extendedData.Any())
 		{
 			//Reset existing collection
 			var entries = this.ExtendedData.ToArray();
@@ -307,7 +309,9 @@ public abstract class CadObject : IHandledCadObject
 		this.Handle = 0;
 		this.Document = null;
 
-		if (this.ExtendedData.Any())
+		// The ExtendedData getter creates the dictionary: test the field, so objects without
+		// XData (nearly all of them) do not each allocate one here.
+		if (this._extendedData != null && this._extendedData.Any())
 		{
 			//Reset existing collection
 			var entries = this.ExtendedData.ToArray();
