@@ -12,6 +12,27 @@ namespace ACadSharp.IO.DWG
 		private IDwgStreamReader _cachedHandlesReader;
 		private IDwgStreamReader _cachedTextReader;
 
+		// The merged reader only routes calls to its three readers, which are now the cached
+		// instances above, so one merged reader per combination serves every object.
+		private DwgMergedReader _cachedMerged;
+		private IDwgStreamReader _mergedObject, _mergedText, _mergedHandles;
+
+		private IDwgStreamReader mergedReader()
+		{
+			if (this._cachedMerged == null
+				|| !ReferenceEquals(this._mergedObject, this._objectReader)
+				|| !ReferenceEquals(this._mergedText, this._textReader)
+				|| !ReferenceEquals(this._mergedHandles, this._handlesReader))
+			{
+				this._cachedMerged = new DwgMergedReader(this._objectReader, this._textReader, this._handlesReader);
+				this._mergedObject = this._objectReader;
+				this._mergedText = this._textReader;
+				this._mergedHandles = this._handlesReader;
+			}
+
+			return this._cachedMerged;
+		}
+
 		private IDwgStreamReader sectionReader(ref IDwgStreamReader cached)
 		{
 			return cached ??= DwgStreamReaderBase.GetStreamHandler(

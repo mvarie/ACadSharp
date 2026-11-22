@@ -256,7 +256,7 @@ namespace ACadSharp.IO.DWG
 				this._textReader = this.sectionReader(ref this._cachedTextReader);
 				this._textReader.SetPositionByFlag(this._handleSectionOffset - 1);
 
-				this._mergedReaders = new DwgMergedReader(this._objectReader, this._textReader, this._handlesReader);
+				this._mergedReaders = this.mergedReader();
 			}
 			else
 			{
@@ -6904,7 +6904,7 @@ namespace ACadSharp.IO.DWG
 				this._textReader.SetPositionByFlag(size + this._objectInitialPos - 1);
 			}
 
-			this._mergedReaders = new DwgMergedReader(this._objectReader, this._textReader, this._handlesReader);
+			this._mergedReaders = this.mergedReader();
 		}
 
 		#region Evaluation Graph, Enhanced Block etc.
