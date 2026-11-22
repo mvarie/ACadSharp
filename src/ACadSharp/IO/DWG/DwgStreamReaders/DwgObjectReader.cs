@@ -183,6 +183,7 @@ namespace ACadSharp.IO.DWG
 				if (template == null)
 					continue;
 
+				this.notifyDecoded(template);
 				this._builder.AddTemplate(template);
 			}
 		}

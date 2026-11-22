@@ -119,6 +119,15 @@ public partial class DwgReader : CadReaderBase<DwgReaderConfiguration>
 		this._document.Header = this.ReadHeader();
 		this._document.Header.Document = this._document;
 
+		try
+		{
+			this.Configuration.HeaderRead?.Invoke(this._document.Header);
+		}
+		catch
+		{
+			// A preview consumer must never be able to break the read.
+		}
+
 		this.readTemplate();
 		this.readClasses();
 		this.readAppInfo();

@@ -117,6 +117,9 @@ namespace ACadSharp.IO.DWG
 						}
 					}
 
+					if (template != null)
+						worker.notifyDecoded(template);
+
 					results[i] = new Decoded { Template = template, Edges = worker._edges.ToArray() };
 				}
 

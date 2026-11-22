@@ -31,4 +31,26 @@ public class DwgReaderConfiguration : CadReaderConfiguration
 	/// resulting document is the same. 0 means one thread per processor.
 	/// </summary>
 	public int ParallelObjectDecode { get; set; } = 1;
+
+	/// <summary>
+	/// Called with each model space entity as soon as its own data has been decoded, before the
+	/// document is built. Lets a viewer draw a draft of the drawing while the read is still
+	/// running.
+	/// </summary>
+	/// <remarks>
+	/// At that point the entity's geometry and its own <see cref="Entities.Entity.Color"/> are
+	/// valid. Its table references are not resolved yet: <see cref="Entities.Entity.Layer"/> and
+	/// <see cref="Entities.Entity.LineType"/> are placeholders, and the entity has no document.
+	/// Inserts are reported, but their blocks may not be read yet. With
+	/// <see cref="ParallelObjectDecode"/> above 1 this is called concurrently from several
+	/// threads, in no particular order. The consumer must only read the entity, never keep a
+	/// mutable hold on it, and return quickly; exceptions it throws are swallowed.
+	/// </remarks>
+	public System.Action<Entities.Entity> ModelSpaceEntityDecoded { get; set; }
+
+	/// <summary>
+	/// Called with the header as soon as it is read, before any object, so a draft view can be
+	/// framed (<c>$EXTMIN</c>/<c>$EXTMAX</c>) ahead of <see cref="ModelSpaceEntityDecoded"/>.
+	/// </summary>
+	public System.Action<Header.CadHeader> HeaderRead { get; set; }
 }
