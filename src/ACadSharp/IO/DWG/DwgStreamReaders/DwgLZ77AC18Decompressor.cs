@@ -4,7 +4,7 @@ using System.IO;
 namespace ACadSharp.IO.DWG;
 
 // Variation of the algorithm LZ77 used in 2004 DWG files.
-internal static class DwgLZ77AC18Decompressor
+internal static partial class DwgLZ77AC18Decompressor
 {
 	public static Stream Decompress(Stream compressed, long decompressedSize)
 	{

@@ -17,7 +17,7 @@ namespace ACadSharp.IO;
 /// <summary>
 /// Class for reading a DWG file into a <see cref="CadDocument"></see>.
 /// </summary>
-public class DwgReader : CadReaderBase<DwgReaderConfiguration>
+public partial class DwgReader : CadReaderBase<DwgReaderConfiguration>
 {
 	private DwgDocumentBuilder _builder;
 
@@ -371,6 +371,10 @@ public class DwgReader : CadReaderBase<DwgReaderConfiguration>
 
 	private Stream getSectionBuffer18(DwgFileHeaderAC18 fileheader, string sectionName)
 	{
+		Stream parallel = this.tryGetSectionBuffer18Parallel(fileheader, sectionName);
+		if (parallel != null)
+			return parallel;
+
 		if (!fileheader.Descriptors.TryGetValue(sectionName, out DwgSectionDescriptor descriptor))
 			return null;
 
