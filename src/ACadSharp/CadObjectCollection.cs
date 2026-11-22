@@ -49,6 +49,17 @@ public class CadObjectCollection<T> : IObservableCadCollection<T>
 	}
 
 	/// <summary>
+	/// Presizes the collection for <paramref name="capacity"/> items, so a reader filling a block
+	/// with a million entities does not rehash them through every intermediate size.
+	/// </summary>
+	internal void EnsureCapacity(int capacity)
+	{
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+		this._entries.EnsureCapacity(capacity);
+#endif
+	}
+
+	/// <summary>
 	/// Add a <see cref="CadObject"/> to the collection, this method triggers <see cref="OnAdd"/>.
 	/// </summary>
 	/// <param name="item"></param>

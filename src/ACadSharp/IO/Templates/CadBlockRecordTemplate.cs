@@ -85,6 +85,8 @@ internal class CadBlockRecordTemplate : CadTableEntryTemplate<BlockRecord>, ICad
 				this.OwnedObjectsHandlers.UnionWith(this.BlockEntityTemplate.OwnedObjectsHandlers);
 			}
 
+			this.CadObject.Entities.EnsureCapacity(this.OwnedObjectsHandlers.Count + this.ReferenceTemplates.Count);
+
 			foreach (ulong handle in this.OwnedObjectsHandlers)
 			{
 				if (builder.TryGetCadObject(handle, out Entity child))
